@@ -72,7 +72,7 @@ export default function CommandSyncZoteroToCraft() {
   const [selectedCollectionId, setSelectedCollectionId] = useState<string>(
     () => {
       return normalizeOptional(preferences.zotero_collection_id) || "all";
-    },
+    }
   );
   const [existingVersion, setExistingVersion] = useState(0);
   const [isLoadingResults, setIsLoadingResults] = useState(true);
@@ -81,11 +81,11 @@ export default function CommandSyncZoteroToCraft() {
 
   const zoteroClientRef = useRef<ZoteroClient | null>(null);
   const zoteroModeRef = useRef<"local" | "web">(
-    normalizeZoteroMode(preferences.zotero_mode),
+    normalizeZoteroMode(preferences.zotero_mode)
   );
   const craftClientRef = useRef<CraftClient | null>(null);
   const schemaIndexRef = useRef<Map<string, CraftCollectionSchemaProperty>>(
-    new Map(),
+    new Map()
   );
   const contentFieldKeyRef = useRef<string>("title");
   const schemaLoadedRef = useRef(false);
@@ -146,22 +146,22 @@ export default function CommandSyncZoteroToCraft() {
       const zoteroUserId = normalizeOptional(preferences.zotero_user_id);
       const zoteroApiKey = normalizeOptional(preferences.zotero_api_key);
       const zoteroCollectionId = normalizeOptional(
-        preferences.zotero_collection_id,
+        preferences.zotero_collection_id
       );
       const craftApiBase = requirePreference(
         preferences.craft_api_base,
-        "Craft API Base URL",
+        "Craft API Base URL"
       );
       const craftApiKey = normalizeOptional(preferences.craft_api_key);
       const craftDailyApiBase = normalizeOptional(
-        preferences.craft_daily_api_base,
+        preferences.craft_daily_api_base
       );
       const craftDailyApiKey = normalizeOptional(
-        preferences.craft_daily_api_key,
+        preferences.craft_daily_api_key
       );
       const craftCollectionId = requirePreference(
         preferences.craft_collection_id,
-        "Craft Collection ID",
+        "Craft Collection ID"
       );
 
       maxItemsRef.current = parseCount(preferences.max_items, 10);
@@ -171,7 +171,7 @@ export default function CommandSyncZoteroToCraft() {
       if (zoteroMode === "web") {
         if (!zoteroUserId || !zoteroApiKey) {
           throw new Error(
-            "Zotero User ID and API Key are required in Web mode.",
+            "Zotero User ID and API Key are required in Web mode."
           );
         }
         const zoteroClient = new ZoteroClient({
@@ -187,7 +187,7 @@ export default function CommandSyncZoteroToCraft() {
         try {
           const localCollections = await getLocalCollections(
             resolvedDbPath,
-            cachePeriodRef.current,
+            cachePeriodRef.current
           );
           setCollections(formatCollections(localCollections));
         } catch {
@@ -268,7 +268,7 @@ export default function CommandSyncZoteroToCraft() {
         items = await zoteroClient.searchCollectionItems(
           trimmed,
           limit,
-          collectionId,
+          collectionId
         );
       } else {
         const localDbPath = resolveZoteroDbPath(preferences.zotero_db_path);
@@ -279,7 +279,7 @@ export default function CommandSyncZoteroToCraft() {
           trimmed,
           limit,
           collectionId,
-          cachePeriodRef.current,
+          cachePeriodRef.current
         );
       }
 
@@ -312,7 +312,7 @@ export default function CommandSyncZoteroToCraft() {
       existingItemsRef.current = new Map(
         items
           .filter((item) => item.title)
-          .map((item) => [normalizeTitle(item.title || ""), item.id]),
+          .map((item) => [normalizeTitle(item.title || ""), item.id])
       );
       existingTitlesLoadedRef.current = true;
       setExistingVersion((prev) => prev + 1);
@@ -346,7 +346,7 @@ export default function CommandSyncZoteroToCraft() {
 
   const syncItems = async (
     items: ZoteroItem[],
-    options?: { openAfterSync?: boolean },
+    options?: { openAfterSync?: boolean }
   ) => {
     if (isSyncing) return;
     const craftClient = craftClientRef.current;
@@ -392,7 +392,7 @@ export default function CommandSyncZoteroToCraft() {
         try {
           const citationKeyOverride = await resolveCitationKey(
             item,
-            bibtexCacheRef.current,
+            bibtexCacheRef.current
           );
           const properties = buildCraftProperties(item, schemaIndex, {
             citationKey: citationKeyOverride || undefined,
@@ -409,7 +409,7 @@ export default function CommandSyncZoteroToCraft() {
             dailyNoteIdRef,
             craftClientRef.current,
             addLog,
-            readingDateWarningRef,
+            readingDateWarningRef
           );
           const blocks = preferences.sync_notes
             ? await buildNotesBlocks(zoteroClientRef.current, item)
@@ -424,7 +424,7 @@ export default function CommandSyncZoteroToCraft() {
               title,
               properties,
               contentFieldKeyRef.current,
-              { allowNewSelectOptions },
+              { allowNewSelectOptions }
             );
             if (blocks.length > 0) {
               await craftClient.addItemBlocks(existingId, blocks);
@@ -440,7 +440,7 @@ export default function CommandSyncZoteroToCraft() {
               properties,
               blocks,
               contentFieldKeyRef.current,
-              { allowNewSelectOptions },
+              { allowNewSelectOptions }
             );
             addLog({ title, status: "created", url, zoteroLink });
             createdCount += 1;
@@ -481,7 +481,7 @@ export default function CommandSyncZoteroToCraft() {
         } catch {
           const webUrl = buildCraftWebUrl(
             openTargetId,
-            preferences.craft_api_base,
+            preferences.craft_api_base
           );
           if (webUrl) {
             await open(webUrl);
@@ -576,7 +576,7 @@ export default function CommandSyncZoteroToCraft() {
           {results.map((item) => {
             const displayItem = item;
             const existingId = existingItemsRef.current.get(
-              normalizeTitle(displayItem.data.title || "Untitled"),
+              normalizeTitle(displayItem.data.title || "Untitled")
             );
             const spaceId = normalizeOptional(preferences.craft_space_id);
             const existingDeepLink = existingId
@@ -857,7 +857,7 @@ function getItemIcon(itemType?: string): string {
 }
 async function buildNotesBlocks(
   zoteroClient: ZoteroClient | null,
-  item: ZoteroItem,
+  item: ZoteroItem
 ): Promise<Array<{ type: "text"; markdown: string }>> {
   let notes: string[] = [];
   if (zoteroClient) {
@@ -868,8 +868,8 @@ async function buildNotesBlocks(
   if (notes.length === 0) return [];
   const items = notes.flatMap((note) => extractNoteParagraphs(note));
   return [
-    { type: "text", markdown: "## Notes" },
-    ...items.map((note) => ({ type: "text", markdown: note })),
+    { type: "text" as const, markdown: "## Notes" },
+    ...items.map((note) => ({ type: "text" as const, markdown: note })),
   ];
 }
 
@@ -885,7 +885,7 @@ function extractNoteParagraphs(note: string): string[] {
     const raw = match[2].replace(/<br\s*\/?>/gi, "\n");
     const citationAware = replaceCitationSpans(raw);
     const text = normalizeCitationSpacing(
-      collapseWhitespace(decodeHtmlEntities(stripHtml(citationAware))),
+      collapseWhitespace(decodeHtmlEntities(stripHtml(citationAware)))
     );
     if (!text) continue;
     if (tag === "h1") {
@@ -903,8 +903,8 @@ function extractNoteParagraphs(note: string): string[] {
 
   const fallback = normalizeCitationSpacing(
     collapseWhitespace(
-      decodeHtmlEntities(stripHtml(replaceCitationSpans(normalized))),
-    ),
+      decodeHtmlEntities(stripHtml(replaceCitationSpans(normalized)))
+    )
   );
   if (!fallback) return [];
   return fallback
@@ -920,7 +920,7 @@ function replaceCitationSpans(input: string): string {
       const text = collapseWhitespace(decodeHtmlEntities(stripHtml(inner)));
       const cleaned = normalizeCitationSpacing(text);
       return cleaned;
-    },
+    }
   );
 }
 
@@ -959,7 +959,7 @@ async function applyReadingDate(
   dailyNoteIdRef: { current: string | null },
   craftClient: CraftClient | null,
   addLog: (log: SyncLog) => void,
-  warningRef: { current: boolean },
+  warningRef: { current: boolean }
 ) {
   const readingDateProp = getReadingDateProperty(schemaIndex);
   if (!readingDateProp) return;
@@ -1031,7 +1031,7 @@ async function applyReadingDate(
 
 async function resolveCitationKey(
   item: ZoteroItem,
-  cache: Map<string, string>,
+  cache: Map<string, string>
 ): Promise<string | null> {
   const cached = cache.get(item.key);
   if (cached) return cached;
@@ -1046,10 +1046,10 @@ async function resolveCitationKey(
 }
 
 function formatCollections(
-  collections: ZoteroCollection[],
+  collections: ZoteroCollection[]
 ): ZoteroCollection[] {
   const collectionMap = new Map(
-    collections.map((collection) => [collection.key, collection]),
+    collections.map((collection) => [collection.key, collection])
   );
   const formatName = (collection: ZoteroCollection): string => {
     if (!collection.parentCollection) return collection.name;

@@ -1,8 +1,8 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "zotero-craft-sync",
+  "name": "zotero-craft-raycast",
   "title": "Zotero to Craft",
-  "description": "Sync Zotero collection metadata to a Craft collection",
+  "description": "Sync Zotero to Craft",
   "icon": "icon.png",
   "author": "tomben",
   "categories": [
@@ -13,9 +13,9 @@
   "commands": [
     {
       "name": "commandSyncZoteroToCraft",
-      "title": "Sync Zotero to Craft",
+      "title": "Zotero to Craft",
       "subtitle": "Craft",
-      "description": "Sync Zotero collection metadata into a Craft collection",
+      "description": "Sync Zotero to Craft",
       "mode": "view"
     }
   ],
