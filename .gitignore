@@ -1,3 +1,6 @@
+# Raycast documentation
+document_instructions_to_agent*.md
+
 # Logs
 logs
 *.log
