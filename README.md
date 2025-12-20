@@ -22,8 +22,6 @@ Open Raycast and go to **Extensions** → **Zotero to Craft** → **Preferences*
 - **Craft API Key**: create in Craft → Settings → Advanced → API Access. If your Craft API link is set to **Public**, you can leave this empty.
 - **Craft Space ID**: optional, used for `craftdocs://` deep links.
 - **Craft Collection ID**: use the Craft API `GET /collections` to list collections and copy the target `id`.
-- **Craft Daily API Base URL**: optional. Add a **Daily Notes & Tasks** API connection to enable a clickable Reading Date link.
-- **Craft Daily API Key**: optional, only needed if the Daily Notes API link is private.
 - **Sync Notes**: include Zotero notes/annotations in the Craft item body (if present). When off, the item body is left empty.
 - **Max Items**: number of results to fetch per search (default 10).
 
@@ -41,9 +39,7 @@ Citation keys are read from the item’s **Extra** field (for example `Citation 
 
 Local mode reads the Zotero SQLite database directly; no Better BibTeX plugin is required. If you see database-lock errors, quit Zotero and retry. Web mode uses the Zotero API.
 
-If your Reading Date field is a link-to-block field, the extension only fills it when a Daily Notes API base URL is configured. Otherwise it remains empty. If you don’t need a link, change the field type to a Date field.
-
-If you use a **Selected Documents** API connection (not All Documents), daily notes are outside the scope of that API. In that case the Reading Date link cannot be resolved and will be left empty. To make it clickable, use an **All Documents** connection or switch the field to a Date type.
+The Reading Date field is a link-to-block field, the extension resolves the daily note using the **All Documents** API. If that lookup fails (for example, the daily note does not exist yet), the Reading Date link is skipped, and the field is left empty. You can link to the daily note manually later.
 
 ## Field mapping
 

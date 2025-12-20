@@ -11,7 +11,6 @@ import {
 } from "@raycast/api";
 import { useEffect, useRef, useState } from "react";
 import { CraftClient } from "./lib/craft";
-import { CraftDailyClient } from "./lib/craftDaily";
 import {
   getLocalCollections,
   resolveZoteroDbPath,
@@ -45,8 +44,6 @@ interface Preferences {
   craft_api_key?: string;
   craft_space_id?: string;
   craft_collection_id: string;
-  craft_daily_api_base?: string;
-  craft_daily_api_key?: string;
   sync_notes?: boolean;
   max_items?: string;
 }
@@ -89,7 +86,6 @@ export default function CommandSyncZoteroToCraft() {
   );
   const contentFieldKeyRef = useRef<string>("title");
   const schemaLoadedRef = useRef(false);
-  const dailyClientRef = useRef<CraftDailyClient | null>(null);
   const dailyNoteIdRef = useRef<string | null>(null);
   const readingDateWarningRef = useRef(false);
   const bibtexCacheRef = useRef<Map<string, string>>(new Map());
@@ -153,12 +149,6 @@ export default function CommandSyncZoteroToCraft() {
         "Craft API Base URL"
       );
       const craftApiKey = normalizeOptional(preferences.craft_api_key);
-      const craftDailyApiBase = normalizeOptional(
-        preferences.craft_daily_api_base
-      );
-      const craftDailyApiKey = normalizeOptional(
-        preferences.craft_daily_api_key
-      );
       const craftCollectionId = requirePreference(
         preferences.craft_collection_id,
         "Craft Collection ID"
@@ -209,10 +199,6 @@ export default function CommandSyncZoteroToCraft() {
         apiBaseUrl: craftApiBase,
         collectionId: craftCollectionId,
       });
-
-      dailyClientRef.current = craftDailyApiBase
-        ? new CraftDailyClient(craftDailyApiBase, craftDailyApiKey)
-        : null;
 
       setInitialized(true);
       setIsLoadingResults(false);
@@ -405,7 +391,6 @@ export default function CommandSyncZoteroToCraft() {
           await applyReadingDate(
             properties,
             schemaIndex,
-            dailyClientRef.current,
             dailyNoteIdRef,
             craftClientRef.current,
             addLog,
@@ -955,7 +940,6 @@ function decodeHtmlEntities(input: string): string {
 async function applyReadingDate(
   properties: Record<string, unknown>,
   schemaIndex: Map<string, CraftCollectionSchemaProperty>,
-  dailyClient: CraftDailyClient | null,
   dailyNoteIdRef: { current: string | null },
   craftClient: CraftClient | null,
   addLog: (log: SyncLog) => void,
@@ -966,6 +950,7 @@ async function applyReadingDate(
 
   const dateString = getLocalDateString();
   const lowerType = readingDateProp.type.toLowerCase();
+  const expectsDate = lowerType.includes("date");
   const expectsObject =
     lowerType.includes("block") ||
     lowerType.includes("link") ||
@@ -973,17 +958,17 @@ async function applyReadingDate(
     lowerType.includes("relation") ||
     lowerType.includes("object");
 
-  if (!expectsObject) {
+  if (expectsDate || !expectsObject) {
     properties[readingDateProp.key] = dateString;
     return;
   }
 
-  if (!dailyClient) {
+  if (!craftClient) {
     if (!warningRef.current) {
       addLog({
         title: "Reading Date",
         status: "skipped",
-        details: "Daily Notes API not configured; skipping Reading Date link.",
+        details: "Craft API not configured; skipping Reading Date link.",
       });
       warningRef.current = true;
     }
@@ -993,23 +978,8 @@ async function applyReadingDate(
   try {
     let dailyNoteId = dailyNoteIdRef.current;
     if (!dailyNoteId) {
-      dailyNoteId = await dailyClient.getDailyNoteId(dateString);
+      dailyNoteId = await craftClient.getDailyNoteId(dateString);
       dailyNoteIdRef.current = dailyNoteId;
-    }
-
-    if (!craftClient) return;
-    const isAccessible = await craftClient.canAccessBlock(dailyNoteId);
-    if (!isAccessible) {
-      if (!warningRef.current) {
-        addLog({
-          title: "Reading Date",
-          status: "skipped",
-          details:
-            "Daily note block is outside the documents API scope; skipping Reading Date link.",
-        });
-        warningRef.current = true;
-      }
-      return;
     }
 
     properties[readingDateProp.key] = {
@@ -1022,7 +992,7 @@ async function applyReadingDate(
       addLog({
         title: "Reading Date",
         status: "skipped",
-        details: `Failed to resolve daily note: ${message}`,
+        details: `Failed to resolve daily note; skipping Reading Date link. ${message}`,
       });
       warningRef.current = true;
     }

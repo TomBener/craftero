@@ -70,6 +70,25 @@ export class CraftClient {
     );
   }
 
+  async getDailyNoteId(date: string): Promise<string> {
+    const url = `${this.baseUrl}/blocks?date=${encodeURIComponent(date)}&maxDepth=0`;
+    const response = await fetch(url, { headers: this.getHeaders() });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Failed to fetch daily note: ${response.status} ${formatErrorText(errorText)}`,
+      );
+    }
+
+    const data = (await response.json()) as { id?: string };
+    if (!data.id) {
+      throw new Error("Daily note ID missing in response");
+    }
+
+    return data.id;
+  }
+
   async getBlockSpaceId(blockId: string): Promise<string | null> {
     const url = `${this.baseUrl}/blocks?id=${encodeURIComponent(blockId)}&maxDepth=0`;
     const response = await fetch(url, { headers: this.getHeaders() });
