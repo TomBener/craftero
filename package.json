@@ -3,7 +3,7 @@
   "name": "zotero-craft-raycast",
   "title": "Zotero to Craft",
   "description": "Sync Zotero to Craft",
-  "icon": "icon.png",
+  "icon": "command-icon.png",
   "author": "tomben",
   "categories": [
     "Productivity"
