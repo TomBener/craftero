@@ -1,6 +1,10 @@
-# Zotero to Craft (Raycast)
+# Craftero
 
-Search Zotero items and sync them into a Craft collection.
+<div align="center">
+  <img src="assets/command-icon.png" alt="Craftero command icon" width="160" />
+</div>
+
+Search Zotero items and sync them into the Craft collection.
 
 ## Setup
 
@@ -10,7 +14,7 @@ Search Zotero items and sync them into a Craft collection.
 
 ## Where to fill in values
 
-Open Raycast and go to **Extensions** → **Zotero to Craft** → **Preferences**. Fill the fields below. Raycast does not support hiding preferences based on a dropdown, so fields for the other mode remain visible; you can ignore them.
+Open Raycast and go to **Extensions** → **Craftero** → **Preferences**. Fill the fields below. Raycast does not support hiding preferences based on a dropdown, so fields for the other mode remain visible; you can ignore them.
 
 - **Zotero Mode**: default is **Local (Zotero Desktop)**. Web mode uses the Zotero API.
 - **Zotero Path**: local Zotero database path (default `~/Zotero/zotero.sqlite`).
@@ -27,7 +31,7 @@ Open Raycast and go to **Extensions** → **Zotero to Craft** → **Preferences*
 
 ## Usage
 
-Run the "Sync Zotero to Craft" command. Type in the search bar to search Zotero; then choose **Sync Item to Craft** or **Sync All Results** from the actions.
+Run the "Craftero" command. Type in the search bar to search Zotero; then choose **Sync Item to Craft** or **Sync All Results** from the actions.
 
 ## Notes about content
 
