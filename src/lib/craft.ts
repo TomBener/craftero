@@ -210,6 +210,25 @@ export class CraftClient {
       );
     }
   }
+
+  async deleteCollectionItems(itemIds: string[]): Promise<void> {
+    if (itemIds.length === 0) return;
+    const deleteResponse = await fetch(
+      `${this.baseUrl}/collections/${this.config.collectionId}/items`,
+      {
+        method: "DELETE",
+        headers: this.getHeaders(),
+        body: JSON.stringify({ idsToDelete: itemIds }),
+      },
+    );
+
+    if (!deleteResponse.ok) {
+      const errorText = await deleteResponse.text();
+      throw new Error(
+        `Failed to delete Craft collection items: ${deleteResponse.status} ${formatErrorText(errorText)}`,
+      );
+    }
+  }
 }
 
 function formatErrorText(text: string): string {

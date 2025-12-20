@@ -1,10 +1,12 @@
 import {
   Action,
   ActionPanel,
+  Alert,
   Detail,
   Icon,
   List,
   Toast,
+  confirmAlert,
   getPreferenceValues,
   open,
   showToast,
@@ -48,7 +50,7 @@ interface Preferences {
   max_items?: string;
 }
 
-type SyncStatus = "created" | "updated" | "skipped" | "error";
+type SyncStatus = "created" | "updated" | "deleted" | "skipped" | "error";
 
 interface SyncLog {
   title: string;
@@ -488,6 +490,61 @@ export default function CommandSyncZoteroToCraft() {
     }
   };
 
+  const deleteExistingItem = async (item: ZoteroItem, itemId: string) => {
+    const title = item.data.title?.trim() || "Untitled";
+    const confirmed = await confirmAlert({
+      title: "Delete from Craft",
+      message: `Delete "${title}" from Craft?`,
+      primaryAction: {
+        title: "Delete",
+        style: Alert.ActionStyle.Destructive,
+      },
+      dismissAction: {
+        title: "Cancel",
+      },
+    });
+
+    if (!confirmed) return;
+
+    const craftClient = craftClientRef.current;
+    if (!craftClient) {
+      await showToast({
+        style: Toast.Style.Failure,
+        title: "Craft not configured",
+      });
+      return;
+    }
+
+    const toast = await showToast({
+      style: Toast.Style.Animated,
+      title: "Deleting from Craft",
+      message: title,
+    });
+
+    try {
+      await craftClient.deleteCollectionItems([itemId]);
+      existingItemsRef.current.delete(normalizeTitle(title));
+      setExistingVersion((prev) => prev + 1);
+      addLog({
+        title,
+        status: "deleted",
+        details: "Deleted from Craft.",
+      });
+      toast.style = Toast.Style.Success;
+      toast.message = "Deleted.";
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      toast.style = Toast.Style.Failure;
+      toast.message = message;
+      addLog({
+        title,
+        status: "error",
+        details: truncate(message, 140),
+        errorDetails: message,
+      });
+    }
+  };
+
   return (
     <List
       isLoading={isLoadingResults || isSyncing}
@@ -617,6 +674,15 @@ export default function CommandSyncZoteroToCraft() {
                         />
                       ) : null
                     ) : null}
+                    {existingId ? (
+                      <Action
+                        title="Delete from Craft"
+                        icon={Icon.Trash}
+                        onAction={() =>
+                          void deleteExistingItem(displayItem, existingId)
+                        }
+                      />
+                    ) : null}
                     {results.length > 1 ? (
                       <Action
                         title="Sync All Results"
@@ -690,6 +756,8 @@ function statusIcon(status: SyncStatus): Icon {
       return Icon.Checkmark;
     case "updated":
       return Icon.Pencil;
+    case "deleted":
+      return Icon.Trash;
     case "skipped":
       return Icon.Minus;
     case "error":
