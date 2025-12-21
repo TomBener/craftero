@@ -570,7 +570,7 @@ export default function CommandSyncZoteroToCraft() {
       {searchText.length === 0 ? (
         <List.EmptyView
           icon={Icon.MagnifyingGlass}
-          title="Type something to search Zotero Database!"
+          title="Type to search your Zotero"
         />
       ) : (
         <List.Section title="Search Results" subtitle={`${results.length}`}>
@@ -830,8 +830,6 @@ function generateMCPPromptData(
   return `Zotero Item Key: ${itemKey}
 Zotero URI: ${zoteroUri}`;
 }
-
-
 
 function buildErrorMarkdown(log: SyncLog): string {
   const errorDetails = log.errorDetails
