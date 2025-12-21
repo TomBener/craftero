@@ -21,24 +21,6 @@
   ],
   "preferences": [
     {
-      "name": "zotero_mode",
-      "type": "dropdown",
-      "required": false,
-      "default": "local",
-      "title": "Zotero Mode",
-      "description": "Local uses Zotero desktop; Web uses the Zotero API",
-      "data": [
-        {
-          "title": "Local (Zotero Desktop)",
-          "value": "local"
-        },
-        {
-          "title": "Web (Zotero API)",
-          "value": "web"
-        }
-      ]
-    },
-    {
       "name": "zotero_db_path",
       "type": "textfield",
       "required": false,
@@ -54,27 +36,6 @@
       "default": "10",
       "label": "Number of Minutes to Cache",
       "description": "Minutes after which cache must be updated"
-    },
-    {
-      "name": "zotero_user_id",
-      "type": "textfield",
-      "required": false,
-      "title": "Zotero User ID (Web mode only)",
-      "description": "Your Zotero user id (7 digits)"
-    },
-    {
-      "name": "zotero_api_key",
-      "type": "password",
-      "required": false,
-      "title": "Zotero API Key (Web mode only)",
-      "description": "Zotero API key with library access"
-    },
-    {
-      "name": "zotero_collection_id",
-      "type": "textfield",
-      "required": false,
-      "title": "Zotero Collection ID (Web mode only)",
-      "description": "Leave empty to search the full library"
     },
     {
       "name": "craft_api_base",

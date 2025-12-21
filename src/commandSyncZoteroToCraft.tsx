@@ -36,11 +36,8 @@ import {
 import { ZoteroClient } from "./lib/zotero";
 
 interface Preferences {
-  zotero_mode?: string;
   zotero_db_path?: string;
   cache_period?: string;
-  zotero_user_id?: string;
-  zotero_api_key?: string;
   zotero_collection_id?: string;
   craft_api_base: string;
   craft_api_key?: string;
@@ -79,10 +76,6 @@ export default function CommandSyncZoteroToCraft() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
-  const zoteroClientRef = useRef<ZoteroClient | null>(null);
-  const zoteroModeRef = useRef<"local" | "web">(
-    normalizeZoteroMode(preferences.zotero_mode),
-  );
   const craftClientRef = useRef<CraftClient | null>(null);
   const schemaIndexRef = useRef<Map<string, CraftCollectionSchemaProperty>>(
     new Map(),
@@ -97,7 +90,6 @@ export default function CommandSyncZoteroToCraft() {
   const existingTitlesLoadedRef = useRef(false);
   const maxItemsRef = useRef(10);
   const cachePeriodRef = useRef(10);
-  const collectionWarningRef = useRef(false);
   const localDbWarningRef = useRef(false);
   const requestIdRef = useRef(0);
 
@@ -121,29 +113,8 @@ export default function CommandSyncZoteroToCraft() {
     setLogs((prev) => [...prev, log]);
   };
 
-  const loadCollections = async (client: ZoteroClient) => {
-    try {
-      const items = await client.getCollections();
-      const formatted = formatCollections(items);
-      setCollections(formatted);
-    } catch {
-      setCollections([]);
-      if (!collectionWarningRef.current) {
-        addLog({
-          title: "Zotero",
-          status: "error",
-          details: "Failed to load Zotero collections.",
-        });
-        collectionWarningRef.current = true;
-      }
-    }
-  };
-
   const initialize = async () => {
     try {
-      const zoteroMode = normalizeZoteroMode(preferences.zotero_mode);
-      const zoteroUserId = normalizeOptional(preferences.zotero_user_id);
-      const zoteroApiKey = normalizeOptional(preferences.zotero_api_key);
       const zoteroCollectionId = normalizeOptional(
         preferences.zotero_collection_id,
       );
@@ -160,40 +131,25 @@ export default function CommandSyncZoteroToCraft() {
       maxItemsRef.current = parseCount(preferences.max_items, 10);
       cachePeriodRef.current = parseCount(preferences.cache_period, 10);
 
-      zoteroModeRef.current = zoteroMode;
-      if (zoteroMode === "web") {
-        if (!zoteroUserId || !zoteroApiKey) {
-          throw new Error(
-            "Zotero User ID and API Key are required in Web mode.",
-          );
+      const resolvedDbPath = resolveZoteroDbPath(preferences.zotero_db_path);
+      try {
+        const localCollections = await getLocalCollections(
+          resolvedDbPath,
+          cachePeriodRef.current,
+        );
+        setCollections(formatCollections(localCollections));
+      } catch {
+        setCollections([]);
+        if (!localDbWarningRef.current) {
+          addLog({
+            title: "Zotero",
+            status: "skipped",
+            details: `Zotero DB not found at ${resolvedDbPath}; collection filtering disabled.`,
+          });
+          localDbWarningRef.current = true;
         }
-        const zoteroClient = new ZoteroClient({
-          userId: zoteroUserId,
-          apiKey: zoteroApiKey,
-          collectionId: zoteroCollectionId,
-        });
-        zoteroClientRef.current = zoteroClient;
-        void loadCollections(zoteroClient);
-      } else {
-        zoteroClientRef.current = null;
-        const resolvedDbPath = resolveZoteroDbPath(preferences.zotero_db_path);
-        try {
-          const localCollections = await getLocalCollections(
-            resolvedDbPath,
-            cachePeriodRef.current,
-          );
-          setCollections(formatCollections(localCollections));
-        } catch {
-          setCollections([]);
-          if (!localDbWarningRef.current) {
-            addLog({
-              title: "Zotero",
-              status: "skipped",
-              details: `Zotero DB not found at ${resolvedDbPath}; collection filtering disabled.`,
-            });
-            localDbWarningRef.current = true;
-          }
-        }
+      }
+      if (!zoteroCollectionId) {
         setSelectedCollectionId("all");
       }
 
@@ -220,11 +176,9 @@ export default function CommandSyncZoteroToCraft() {
   const loadResults = async (query: string) => {
     const requestId = ++requestIdRef.current;
     const trimmed = query.trim();
-    const mode = zoteroModeRef.current;
-    const canFilterCollection =
-      mode === "web" || (mode === "local" && selectedCollectionId !== "all");
+    const canFilterCollection = selectedCollectionId !== "all";
     const collectionKey = canFilterCollection ? selectedCollectionId : "all";
-    const cacheKey = `${mode}:${collectionKey}:${trimmed}`;
+    const cacheKey = `${collectionKey}:${trimmed}`;
 
     if (!trimmed) {
       if (requestId === requestIdRef.current) {
@@ -249,28 +203,16 @@ export default function CommandSyncZoteroToCraft() {
       const limit = maxItemsRef.current;
       let items: ZoteroItem[] = [];
 
-      if (mode === "web") {
-        const zoteroClient = zoteroClientRef.current;
-        if (!zoteroClient) return;
-        const collectionId =
-          selectedCollectionId === "all" ? null : selectedCollectionId;
-        items = await zoteroClient.searchCollectionItems(
-          trimmed,
-          limit,
-          collectionId,
-        );
-      } else {
-        const localDbPath = resolveZoteroDbPath(preferences.zotero_db_path);
-        const collectionId =
-          selectedCollectionId === "all" ? null : selectedCollectionId;
-        items = await searchLocalItems(
-          localDbPath,
-          trimmed,
-          limit,
-          collectionId,
-          cachePeriodRef.current,
-        );
-      }
+      const localDbPath = resolveZoteroDbPath(preferences.zotero_db_path);
+      const collectionId =
+        selectedCollectionId === "all" ? null : selectedCollectionId;
+      items = await searchLocalItems(
+        localDbPath,
+        trimmed,
+        limit,
+        collectionId,
+        cachePeriodRef.current,
+      );
 
       if (requestId === requestIdRef.current) {
         searchCacheRef.current.set(cacheKey, items);
@@ -416,7 +358,7 @@ export default function CommandSyncZoteroToCraft() {
             readingDateWarningRef,
           );
           const blocks = preferences.sync_notes
-            ? await buildNotesBlocks(zoteroClientRef.current, item)
+            ? await buildNotesBlocks(item)
             : [];
           const url = item.data.url || item.data.DOI || undefined;
           const zoteroLink = `zotero://select/library/items/${item.key}`;
@@ -793,10 +735,6 @@ function parseCount(value: string | undefined, fallback: number): number {
   return Number.isNaN(parsed) ? fallback : parsed;
 }
 
-function normalizeZoteroMode(value: string | undefined): "local" | "web" {
-  return value === "web" ? "web" : "local";
-}
-
 function extractCitationKeyFromExtra(extra?: string): string | null {
   if (!extra) return null;
   const lines = extra.split(/\r?\n/);
@@ -997,13 +935,10 @@ function getItemIcon(itemType?: string): string {
   return ITEM_TYPE_ICONS[normalized] || "document.svg";
 }
 async function buildNotesBlocks(
-  zoteroClient: ZoteroClient | null,
   item: ZoteroItem,
 ): Promise<Array<{ type: "text"; markdown: string }>> {
   let notes: string[] = [];
-  if (zoteroClient) {
-    notes = await zoteroClient.getItemNotes(item.key);
-  } else if (item.data.notes) {
+  if (item.data.notes) {
     notes = item.data.notes;
   }
   if (notes.length === 0) return [];
