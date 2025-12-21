@@ -78,4 +78,5 @@ export interface CraftCollectionSchema {
 export interface CraftCollectionItem {
   id: string;
   title?: string;
+  properties?: Record<string, unknown>;
 }

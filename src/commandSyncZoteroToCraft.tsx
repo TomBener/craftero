@@ -2,6 +2,7 @@ import {
   Action,
   ActionPanel,
   Alert,
+  Clipboard,
   Detail,
   Icon,
   List,
@@ -26,7 +27,6 @@ import {
   getLocalDateString,
   getReadingDateProperty,
   normalizeName,
-  normalizeTitle,
 } from "./lib/mapping";
 import {
   CraftCollectionSchemaProperty,
@@ -48,6 +48,7 @@ interface Preferences {
   craft_collection_id: string;
   sync_notes?: boolean;
   max_items?: string;
+  ai_chat_deeplink?: string;
 }
 
 type SyncStatus = "created" | "updated" | "deleted" | "skipped" | "error";
@@ -71,7 +72,7 @@ export default function CommandSyncZoteroToCraft() {
   const [selectedCollectionId, setSelectedCollectionId] = useState<string>(
     () => {
       return normalizeOptional(preferences.zotero_collection_id) || "all";
-    }
+    },
   );
   const [existingVersion, setExistingVersion] = useState(0);
   const [isLoadingResults, setIsLoadingResults] = useState(true);
@@ -80,11 +81,11 @@ export default function CommandSyncZoteroToCraft() {
 
   const zoteroClientRef = useRef<ZoteroClient | null>(null);
   const zoteroModeRef = useRef<"local" | "web">(
-    normalizeZoteroMode(preferences.zotero_mode)
+    normalizeZoteroMode(preferences.zotero_mode),
   );
   const craftClientRef = useRef<CraftClient | null>(null);
   const schemaIndexRef = useRef<Map<string, CraftCollectionSchemaProperty>>(
-    new Map()
+    new Map(),
   );
   const contentFieldKeyRef = useRef<string>("title");
   const schemaLoadedRef = useRef(false);
@@ -144,16 +145,16 @@ export default function CommandSyncZoteroToCraft() {
       const zoteroUserId = normalizeOptional(preferences.zotero_user_id);
       const zoteroApiKey = normalizeOptional(preferences.zotero_api_key);
       const zoteroCollectionId = normalizeOptional(
-        preferences.zotero_collection_id
+        preferences.zotero_collection_id,
       );
       const craftApiBase = requirePreference(
         preferences.craft_api_base,
-        "Craft API Base URL"
+        "Craft API Base URL",
       );
       const craftApiKey = normalizeOptional(preferences.craft_api_key);
       const craftCollectionId = requirePreference(
         preferences.craft_collection_id,
-        "Craft Collection ID"
+        "Craft Collection ID",
       );
 
       maxItemsRef.current = parseCount(preferences.max_items, 10);
@@ -163,7 +164,7 @@ export default function CommandSyncZoteroToCraft() {
       if (zoteroMode === "web") {
         if (!zoteroUserId || !zoteroApiKey) {
           throw new Error(
-            "Zotero User ID and API Key are required in Web mode."
+            "Zotero User ID and API Key are required in Web mode.",
           );
         }
         const zoteroClient = new ZoteroClient({
@@ -179,7 +180,7 @@ export default function CommandSyncZoteroToCraft() {
         try {
           const localCollections = await getLocalCollections(
             resolvedDbPath,
-            cachePeriodRef.current
+            cachePeriodRef.current,
           );
           setCollections(formatCollections(localCollections));
         } catch {
@@ -256,7 +257,7 @@ export default function CommandSyncZoteroToCraft() {
         items = await zoteroClient.searchCollectionItems(
           trimmed,
           limit,
-          collectionId
+          collectionId,
         );
       } else {
         const localDbPath = resolveZoteroDbPath(preferences.zotero_db_path);
@@ -267,7 +268,7 @@ export default function CommandSyncZoteroToCraft() {
           trimmed,
           limit,
           collectionId,
-          cachePeriodRef.current
+          cachePeriodRef.current,
         );
       }
 
@@ -299,8 +300,24 @@ export default function CommandSyncZoteroToCraft() {
       const items = await craftClient.getCollectionItems();
       existingItemsRef.current = new Map(
         items
-          .filter((item) => item.title)
-          .map((item) => [normalizeTitle(item.title || ""), item.id])
+          .filter((item) => {
+            const props = item.properties || {};
+            const zoteroLink = Object.values(props).find(
+              (value) =>
+                typeof value === "string" &&
+                value.startsWith("zotero://select/library/items/"),
+            );
+            return zoteroLink;
+          })
+          .map((item) => {
+            const props = item.properties || {};
+            const zoteroLink = Object.values(props).find(
+              (value) =>
+                typeof value === "string" &&
+                value.startsWith("zotero://select/library/items/"),
+            ) as string;
+            return [zoteroLink, item.id];
+          }),
       );
       existingTitlesLoadedRef.current = true;
       setExistingVersion((prev) => prev + 1);
@@ -334,7 +351,7 @@ export default function CommandSyncZoteroToCraft() {
 
   const syncItems = async (
     items: ZoteroItem[],
-    options?: { openAfterSync?: boolean }
+    options?: { openAfterSync?: boolean },
   ) => {
     if (isSyncing) return;
     const craftClient = craftClientRef.current;
@@ -368,7 +385,7 @@ export default function CommandSyncZoteroToCraft() {
       for (let index = 0; index < items.length; index += 1) {
         const item = items[index];
         const title = item.data.title?.trim() || "Untitled";
-        const normalizedTitle = normalizeTitle(title);
+        const zoteroUri = `zotero://select/library/items/${item.key}`;
         const tagNames = (item.data.tags || [])
           .map((tag) => tag.tag.trim())
           .filter(Boolean);
@@ -376,11 +393,11 @@ export default function CommandSyncZoteroToCraft() {
 
         toast.message = `Syncing ${index + 1} of ${items.length}`;
 
-        const existingId = existingItemsRef.current.get(normalizedTitle);
+        const existingId = existingItemsRef.current.get(zoteroUri);
         try {
           const citationKeyOverride = await resolveCitationKey(
             item,
-            bibtexCacheRef.current
+            bibtexCacheRef.current,
           );
           const properties = buildCraftProperties(item, schemaIndex, {
             citationKey: citationKeyOverride || undefined,
@@ -396,7 +413,7 @@ export default function CommandSyncZoteroToCraft() {
             dailyNoteIdRef,
             craftClientRef.current,
             addLog,
-            readingDateWarningRef
+            readingDateWarningRef,
           );
           const blocks = preferences.sync_notes
             ? await buildNotesBlocks(zoteroClientRef.current, item)
@@ -411,7 +428,7 @@ export default function CommandSyncZoteroToCraft() {
               title,
               properties,
               contentFieldKeyRef.current,
-              { allowNewSelectOptions }
+              { allowNewSelectOptions },
             );
             if (blocks.length > 0) {
               await craftClient.addItemBlocks(existingId, blocks);
@@ -427,11 +444,11 @@ export default function CommandSyncZoteroToCraft() {
               properties,
               blocks,
               contentFieldKeyRef.current,
-              { allowNewSelectOptions }
+              { allowNewSelectOptions },
             );
             addLog({ title, status: "created", url, zoteroLink });
             createdCount += 1;
-            existingItemsRef.current.set(normalizedTitle, newId);
+            existingItemsRef.current.set(zoteroUri, newId);
             if (!openTargetId && options?.openAfterSync) {
               openTargetId = newId;
             }
@@ -468,7 +485,7 @@ export default function CommandSyncZoteroToCraft() {
         } catch {
           const webUrl = buildCraftWebUrl(
             openTargetId,
-            preferences.craft_api_base
+            preferences.craft_api_base,
           );
           if (webUrl) {
             await open(webUrl);
@@ -492,6 +509,7 @@ export default function CommandSyncZoteroToCraft() {
 
   const deleteExistingItem = async (item: ZoteroItem, itemId: string) => {
     const title = item.data.title?.trim() || "Untitled";
+    const zoteroUri = `zotero://select/library/items/${item.key}`;
     const confirmed = await confirmAlert({
       title: "Delete from Craft",
       message: `Delete "${title}" from Craft?`,
@@ -523,7 +541,7 @@ export default function CommandSyncZoteroToCraft() {
 
     try {
       await craftClient.deleteCollectionItems([itemId]);
-      existingItemsRef.current.delete(normalizeTitle(title));
+      existingItemsRef.current.delete(zoteroUri);
       setExistingVersion((prev) => prev + 1);
       addLog({
         title,
@@ -617,9 +635,8 @@ export default function CommandSyncZoteroToCraft() {
         <List.Section title="Search Results" subtitle={`${results.length}`}>
           {results.map((item) => {
             const displayItem = item;
-            const existingId = existingItemsRef.current.get(
-              normalizeTitle(displayItem.data.title || "Untitled")
-            );
+            const zoteroUri = `zotero://select/library/items/${displayItem.key}`;
+            const existingId = existingItemsRef.current.get(zoteroUri);
             const spaceId = normalizeOptional(preferences.craft_space_id);
             const existingDeepLink = existingId
               ? buildCraftDeepLink(existingId, spaceId ?? undefined)
@@ -652,24 +669,67 @@ export default function CommandSyncZoteroToCraft() {
                     <Action
                       title="Sync Item to Craft"
                       icon={Icon.Upload}
+                      shortcut={{ modifiers: ["cmd"], key: "return" }}
                       onAction={() => void syncItems([displayItem])}
                     />
                     <Action
                       title="Sync & Open in Craft"
                       icon={Icon.ArrowRightCircle}
+                      shortcut={{ modifiers: ["cmd", "shift"], key: "o" }}
                       onAction={() =>
                         void syncItems([displayItem], { openAfterSync: true })
                       }
+                    />
+                    <Action
+                      title="Sync & AI Summarize"
+                      icon={Icon.Stars}
+                      shortcut={{ modifiers: ["cmd"], key: "s" }}
+                      onAction={async () => {
+                        // Check if item is already in Craft by Zotero URI
+                        const zoteroUri = `zotero://select/library/items/${displayItem.key}`;
+
+                        // Ensure existing items are loaded
+                        if (!existingTitlesLoadedRef.current) {
+                          await ensureExistingItems();
+                        }
+
+                        // If item not in Craft, sync it first
+                        if (!existingItemsRef.current.has(zoteroUri)) {
+                          await syncItems([displayItem]);
+                        }
+
+                        // Generate and copy prompt
+                        const prompt = generateMCPPrompt(displayItem);
+                        await Clipboard.copy(prompt);
+
+                        // Open Raycast AI chat
+                        const deeplink =
+                          "raycast://extensions/raycast/raycast-ai/ai-chat";
+                        try {
+                          await open(deeplink);
+                          await showToast({
+                            style: Toast.Style.Success,
+                            title: "Added",
+                          });
+                        } catch (error) {
+                          await showToast({
+                            style: Toast.Style.Failure,
+                            title: "Not added",
+                          });
+                        }
+                      }}
                     />
                     {existingId ? (
                       spaceId ? (
                         <Action.Open
                           title="Open Existing in Craft"
+                          shortcut={{ modifiers: ["cmd"], key: "o" }}
                           target={existingDeepLink}
                         />
                       ) : existingWebUrl ? (
                         <Action.OpenInBrowser
                           title="Open Existing in Craft"
+                          shortcut={{ modifiers: ["cmd"], key: "o" }}
                           url={existingWebUrl}
                         />
                       ) : null
@@ -678,6 +738,7 @@ export default function CommandSyncZoteroToCraft() {
                       <Action
                         title="Delete from Craft"
                         icon={Icon.Trash}
+                        shortcut={{ modifiers: ["cmd"], key: "d" }}
                         onAction={() =>
                           void deleteExistingItem(displayItem, existingId)
                         }
@@ -687,23 +748,22 @@ export default function CommandSyncZoteroToCraft() {
                       <Action
                         title="Sync All Results"
                         icon={Icon.Upload}
+                        shortcut={{ modifiers: ["cmd", "shift"], key: "a" }}
                         onAction={() => void syncItems(results)}
                       />
                     ) : null}
                     <Action.OpenInBrowser
                       title="Open in Zotero"
+                      shortcut={{ modifiers: ["cmd"], key: "z" }}
                       url={`zotero://select/library/items/${displayItem.key}`}
                     />
                     {displayItem.data.url || displayItem.data.DOI ? (
                       <Action.OpenInBrowser
                         title="Open URL"
+                        shortcut={{ modifiers: ["cmd"], key: "u" }}
                         url={displayItem.data.url || displayItem.data.DOI || ""}
                       />
                     ) : null}
-                    <Action.CopyToClipboard
-                      title="Copy Title"
-                      content={displayItem.data.title || "Untitled"}
-                    />
                   </ActionPanel>
                 }
               />
@@ -811,6 +871,34 @@ function buildItemDetail(item: ZoteroItem): string {
   return lines.filter(Boolean).join("\n\n");
 }
 
+function generateMCPPrompt(item: ZoteroItem): string {
+  const itemKey = item.key;
+  const zoteroUri = `zotero://select/library/items/${itemKey}`;
+
+  const prompt = `Please help me summarize this paper and write the summary to Craft:
+
+**Zotero Item Key:** ${itemKey}
+**Zotero URI:** ${zoteroUri}
+
+**Task Steps:**
+1. Use @zotero MCP to fetch the full text for item key "${itemKey}"
+2. Read the PDF and write a comprehensive summary including:
+   - **Background and Research Question**: What is the core problem this paper addresses?
+   - **Methods and Innovation**: What methods were used? What are the key contributions or innovations?
+   - **Results and Conclusions**: What are the main findings? What are the practical implications or insights?
+3. Use @craft MCP to find the collection item where "Zotero Link" property equals "${zoteroUri}"
+4. Create a new page block titled "AI Summary" and add your summary content to it
+5. Insert this "AI Summary" page block into that collection item
+
+**Important:** Do NOT include paper metadata (title, authors, year, journal, etc.) in your summary. Only include the content summary.
+
+**Reply:** Just reply "Added" if successful or "Not added" if failed. No need to include details about what was added.
+
+Please proceed with the task.`;
+
+  return prompt;
+}
+
 function buildErrorMarkdown(log: SyncLog): string {
   const errorDetails = log.errorDetails
     ? `\n\n\`\`\`\n${log.errorDetails}\n\`\`\`\n`
@@ -910,7 +998,7 @@ function getItemIcon(itemType?: string): string {
 }
 async function buildNotesBlocks(
   zoteroClient: ZoteroClient | null,
-  item: ZoteroItem
+  item: ZoteroItem,
 ): Promise<Array<{ type: "text"; markdown: string }>> {
   let notes: string[] = [];
   if (zoteroClient) {
@@ -938,7 +1026,7 @@ function extractNoteParagraphs(note: string): string[] {
     const raw = match[2].replace(/<br\s*\/?>/gi, "\n");
     const citationAware = replaceCitationSpans(raw);
     const text = normalizeCitationSpacing(
-      collapseWhitespace(decodeHtmlEntities(stripHtml(citationAware)))
+      collapseWhitespace(decodeHtmlEntities(stripHtml(citationAware))),
     );
     if (!text) continue;
     if (tag === "h1") {
@@ -956,8 +1044,8 @@ function extractNoteParagraphs(note: string): string[] {
 
   const fallback = normalizeCitationSpacing(
     collapseWhitespace(
-      decodeHtmlEntities(stripHtml(replaceCitationSpans(normalized)))
-    )
+      decodeHtmlEntities(stripHtml(replaceCitationSpans(normalized))),
+    ),
   );
   if (!fallback) return [];
   return fallback
@@ -973,7 +1061,7 @@ function replaceCitationSpans(input: string): string {
       const text = collapseWhitespace(decodeHtmlEntities(stripHtml(inner)));
       const cleaned = normalizeCitationSpacing(text);
       return cleaned;
-    }
+    },
   );
 }
 
@@ -1011,7 +1099,7 @@ async function applyReadingDate(
   dailyNoteIdRef: { current: string | null },
   craftClient: CraftClient | null,
   addLog: (log: SyncLog) => void,
-  warningRef: { current: boolean }
+  warningRef: { current: boolean },
 ) {
   const readingDateProp = getReadingDateProperty(schemaIndex);
   if (!readingDateProp) return;
@@ -1069,7 +1157,7 @@ async function applyReadingDate(
 
 async function resolveCitationKey(
   item: ZoteroItem,
-  cache: Map<string, string>
+  cache: Map<string, string>,
 ): Promise<string | null> {
   const cached = cache.get(item.key);
   if (cached) return cached;
@@ -1084,10 +1172,10 @@ async function resolveCitationKey(
 }
 
 function formatCollections(
-  collections: ZoteroCollection[]
+  collections: ZoteroCollection[],
 ): ZoteroCollection[] {
   const collectionMap = new Map(
-    collections.map((collection) => [collection.key, collection])
+    collections.map((collection) => [collection.key, collection]),
   );
   const formatName = (collection: ZoteroCollection): string => {
     if (!collection.parentCollection) return collection.name;
