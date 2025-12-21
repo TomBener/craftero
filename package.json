@@ -77,7 +77,7 @@
       "name": "sync_notes",
       "type": "checkbox",
       "required": false,
-      "default": false,
+      "default": true,
       "label": "Sync Notes",
       "description": "Include Zotero notes in the Craft item body"
     }
