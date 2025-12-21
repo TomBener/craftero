@@ -2,7 +2,6 @@ import {
   Action,
   ActionPanel,
   Alert,
-  Clipboard,
   Detail,
   Icon,
   List,
@@ -639,23 +638,53 @@ export default function CommandSyncZoteroToCraft() {
                           await syncItems([displayItem]);
                         }
 
-                        // Generate and copy prompt
-                        const prompt = generateMCPPrompt(displayItem);
-                        await Clipboard.copy(prompt);
+                        const craftItemId =
+                          existingItemsRef.current.get(zoteroUri) || null;
+                        let aiSummaryBlockId: string | null = null;
+                        if (craftItemId && craftClientRef.current) {
+                          try {
+                            aiSummaryBlockId =
+                              await craftClientRef.current.addItemBlocksAndReturnFirstId(
+                                craftItemId,
+                                [{ type: "text", markdown: "## AI Summary" }],
+                              );
+                          } catch (error) {
+                            const message =
+                              error instanceof Error
+                                ? error.message
+                                : "Unknown error";
+                            addLog({
+                              title: displayItem.data.title || "Untitled",
+                              status: "skipped",
+                              details: `Failed to create AI Summary block: ${truncate(message, 140)}`,
+                              errorDetails: message,
+                            });
+                          }
+                        }
 
-                        // Open Raycast AI chat
-                        const deeplink =
-                          "raycast://extensions/raycast/raycast-ai/ai-chat";
+                        const promptData = generateMCPPromptData(displayItem, {
+                          craftItemId: craftItemId || undefined,
+                          aiSummaryBlockId: aiSummaryBlockId || undefined,
+                        });
+
+                        const encodedArgument = encodeURIComponent(
+                          JSON.stringify({
+                            PaperInfo: promptData,
+                          }),
+                        );
+                        const deeplink = `raycast://ai-commands/ai-summary-with-mcp-to-craft?arguments=${encodedArgument}`;
                         try {
                           await open(deeplink);
                           await showToast({
                             style: Toast.Style.Success,
-                            title: "Added",
+                            title: "AI Command opened",
+                            message: "Processing with MCP servers",
                           });
                         } catch (error) {
                           await showToast({
                             style: Toast.Style.Failure,
-                            title: "Not added",
+                            title: "Failed to open AI Command",
+                            message: "Make sure the command exists",
                           });
                         }
                       }}
@@ -813,33 +842,23 @@ function buildItemDetail(item: ZoteroItem): string {
   return lines.filter(Boolean).join("\n\n");
 }
 
-function generateMCPPrompt(item: ZoteroItem): string {
+function generateMCPPromptData(
+  item: ZoteroItem,
+  options?: {
+    craftItemId?: string;
+    aiSummaryBlockId?: string;
+  },
+): string {
   const itemKey = item.key;
-  const zoteroUri = `zotero://select/library/items/${itemKey}`;
+  const craftItemId = options?.craftItemId || "";
+  const aiSummaryBlockId = options?.aiSummaryBlockId || "";
 
-  const prompt = `Please help me summarize this paper and write the summary to Craft:
-
-**Zotero Item Key:** ${itemKey}
-**Zotero URI:** ${zoteroUri}
-
-**Task Steps:**
-1. Use @zotero MCP to fetch the full text for item key "${itemKey}"
-2. Read the PDF and write a comprehensive summary in the same language as the paper, including:
-   - **Background and Research Question**: What is the core problem this paper addresses?
-   - **Methods and Innovation**: What methods were used? What are the key contributions or innovations?
-   - **Results and Conclusions**: What are the main findings? What are the practical implications or insights?
-3. Use @craft MCP to find the collection item where "Zotero Link" property equals "${zoteroUri}"
-4. Create a new page block titled "AI Summary" and add your summary content to it
-5. Insert this "AI Summary" page block into that collection item page
-
-**Important:** Do NOT include paper metadata (title, authors, year, journal, etc.) in your summary. Only include the content summary.
-
-**Reply:** Just reply "Added" if successful or "Not added" if failed. No need to include details about what was added.
-
-Please proceed with the task.`;
-
-  return prompt;
+  return `Zotero Item Key: ${itemKey}
+Craft Document ID: ${craftItemId}
+AI Summary Block ID: ${aiSummaryBlockId}`;
 }
+
+
 
 function buildErrorMarkdown(log: SyncLog): string {
   const errorDetails = log.errorDetails
