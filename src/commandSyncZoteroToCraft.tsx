@@ -45,7 +45,6 @@ interface Preferences {
   craft_collection_id: string;
   sync_notes?: boolean;
   max_items?: string;
-  ai_chat_deeplink?: string;
 }
 
 type SyncStatus = "created" | "updated" | "deleted" | "skipped" | "error";
@@ -267,7 +266,8 @@ export default function CommandSyncZoteroToCraft() {
       addLog({
         title: "Craft",
         status: "error",
-        details: "Failed to read existing items; continuing without dedupe.",
+        details:
+          "Failed to read existing items; continuing without deduplication.",
       });
     }
   };
