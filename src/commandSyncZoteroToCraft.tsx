@@ -611,13 +611,12 @@ export default function CommandSyncZoteroToCraft() {
                     <Action
                       title="Sync Item to Craft"
                       icon={Icon.Upload}
-                      shortcut={{ modifiers: ["cmd"], key: "return" }}
                       onAction={() => void syncItems([displayItem])}
                     />
                     <Action
                       title="Sync & Open in Craft"
                       icon={Icon.ArrowRightCircle}
-                      shortcut={{ modifiers: ["cmd", "shift"], key: "o" }}
+                      shortcut={{ modifiers: ["cmd"], key: "return" }}
                       onAction={() =>
                         void syncItems([displayItem], { openAfterSync: true })
                       }
@@ -665,22 +664,27 @@ export default function CommandSyncZoteroToCraft() {
                       spaceId ? (
                         <Action.Open
                           title="Open Existing in Craft"
-                          shortcut={{ modifiers: ["cmd"], key: "o" }}
+                          shortcut={{ modifiers: ["cmd", "shift"], key: "o" }}
                           target={existingDeepLink}
                         />
                       ) : existingWebUrl ? (
                         <Action.OpenInBrowser
                           title="Open Existing in Craft"
-                          shortcut={{ modifiers: ["cmd"], key: "o" }}
+                          shortcut={{ modifiers: ["cmd", "shift"], key: "o" }}
                           url={existingWebUrl}
                         />
                       ) : null
                     ) : null}
+                    <Action.CopyToClipboard
+                      title="Copy Item Key"
+                      shortcut={{ modifiers: ["cmd", "shift"], key: "i" }}
+                      content={displayItem.key}
+                    />
                     {existingId ? (
                       <Action
                         title="Delete from Craft"
                         icon={Icon.Trash}
-                        shortcut={{ modifiers: ["cmd"], key: "d" }}
+                        shortcut={{ modifiers: ["cmd", "shift"], key: "d" }}
                         onAction={() =>
                           void deleteExistingItem(displayItem, existingId)
                         }
@@ -696,13 +700,13 @@ export default function CommandSyncZoteroToCraft() {
                     ) : null}
                     <Action.OpenInBrowser
                       title="Open in Zotero"
-                      shortcut={{ modifiers: ["cmd"], key: "z" }}
+                      shortcut={{ modifiers: ["cmd", "shift"], key: "z" }}
                       url={`zotero://select/library/items/${displayItem.key}`}
                     />
                     {displayItem.data.url || displayItem.data.DOI ? (
                       <Action.OpenInBrowser
                         title="Open URL"
-                        shortcut={{ modifiers: ["cmd"], key: "u" }}
+                        shortcut={{ modifiers: ["cmd", "shift"], key: "u" }}
                         url={displayItem.data.url || displayItem.data.DOI || ""}
                       />
                     ) : null}
@@ -820,13 +824,13 @@ function generateMCPPrompt(item: ZoteroItem): string {
 
 **Task Steps:**
 1. Use @zotero MCP to fetch the full text for item key "${itemKey}"
-2. Read the PDF and write a comprehensive summary including:
+2. Read the PDF and write a comprehensive summary in the same language as the paper, including:
    - **Background and Research Question**: What is the core problem this paper addresses?
    - **Methods and Innovation**: What methods were used? What are the key contributions or innovations?
    - **Results and Conclusions**: What are the main findings? What are the practical implications or insights?
 3. Use @craft MCP to find the collection item where "Zotero Link" property equals "${zoteroUri}"
 4. Create a new page block titled "AI Summary" and add your summary content to it
-5. Insert this "AI Summary" page block into that collection item
+5. Insert this "AI Summary" page block into that collection item page
 
 **Important:** Do NOT include paper metadata (title, authors, year, journal, etc.) in your summary. Only include the content summary.
 
