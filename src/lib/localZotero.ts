@@ -29,6 +29,7 @@ interface LocalItem {
   notes?: string[];
   tags?: string[];
   collections?: string[];
+  [key: string]: unknown; // Allow dynamic metadata fields
 }
 
 const INVALID_TYPES_SQL = `
@@ -452,7 +453,10 @@ function mapItemToZotero(item: LocalItem): ZoteroItem {
       version: 0,
       itemType: item.type || "document",
       title: item.title || "Untitled",
-      creators: (item.creators || []).map((creator) => ({ name: creator })),
+      creators: (item.creators || []).map((creator) => ({
+        creatorType: "author",
+        name: creator,
+      })),
       date: item.date || "",
       publicationTitle: item.publicationTitle || "",
       url: item.url || "",
@@ -531,7 +535,12 @@ export async function searchLocalItems(
     return items.slice(0, limit).map(mapItemToZotero);
   }
 
-  const queryExpression: Fuse.Expression = {
+  const queryExpression: {
+    $and: Array<{
+      $or?: Array<Record<string, string>>;
+      $and?: Array<Record<string, string>>;
+    }>;
+  } = {
     $and: qss
       .split(" ")
       .map((token) => token.trim())
@@ -544,7 +553,7 @@ export async function searchLocalItems(
   };
 
   if (tss.length > 0) {
-    queryExpression.$and?.push({
+    queryExpression.$and.push({
       $and: tss.map((tag) => ({ tags: tag.replace(/\+/gi, " ") })),
     });
   }
