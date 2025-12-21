@@ -54,10 +54,6 @@ export function normalizeName(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
-export function normalizeTitle(title: string): string {
-  return title.trim().toLowerCase();
-}
-
 export function buildSchemaIndex(
   schema: CraftCollectionSchema | null,
 ): Map<string, CraftCollectionSchemaProperty> {
