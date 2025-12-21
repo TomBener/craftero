@@ -638,33 +638,8 @@ export default function CommandSyncZoteroToCraft() {
                           await syncItems([displayItem]);
                         }
 
-                        const craftItemId =
-                          existingItemsRef.current.get(zoteroUri) || null;
-                        let aiSummaryBlockId: string | null = null;
-                        if (craftItemId && craftClientRef.current) {
-                          try {
-                            aiSummaryBlockId =
-                              await craftClientRef.current.addItemBlocksAndReturnFirstId(
-                                craftItemId,
-                                [{ type: "text", markdown: "## AI Summary" }],
-                              );
-                          } catch (error) {
-                            const message =
-                              error instanceof Error
-                                ? error.message
-                                : "Unknown error";
-                            addLog({
-                              title: displayItem.data.title || "Untitled",
-                              status: "skipped",
-                              details: `Failed to create AI Summary block: ${truncate(message, 140)}`,
-                              errorDetails: message,
-                            });
-                          }
-                        }
-
                         const promptData = generateMCPPromptData(displayItem, {
-                          craftItemId: craftItemId || undefined,
-                          aiSummaryBlockId: aiSummaryBlockId || undefined,
+                          zoteroUri,
                         });
 
                         const encodedArgument = encodeURIComponent(
@@ -845,17 +820,15 @@ function buildItemDetail(item: ZoteroItem): string {
 function generateMCPPromptData(
   item: ZoteroItem,
   options?: {
-    craftItemId?: string;
-    aiSummaryBlockId?: string;
+    zoteroUri?: string;
   },
 ): string {
   const itemKey = item.key;
-  const craftItemId = options?.craftItemId || "";
-  const aiSummaryBlockId = options?.aiSummaryBlockId || "";
+  const zoteroUri =
+    options?.zoteroUri || `zotero://select/library/items/${itemKey}`;
 
   return `Zotero Item Key: ${itemKey}
-Craft Document ID: ${craftItemId}
-AI Summary Block ID: ${aiSummaryBlockId}`;
+Zotero URI: ${zoteroUri}`;
 }
 
 

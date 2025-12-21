@@ -211,38 +211,6 @@ export class CraftClient {
     }
   }
 
-  async addItemBlocksAndReturnFirstId(
-    itemId: string,
-    blocks: CraftTextBlock[],
-  ): Promise<string | null> {
-    if (blocks.length === 0) return null;
-    const contentResponse = await fetch(`${this.baseUrl}/blocks`, {
-      method: "POST",
-      headers: this.getHeaders(),
-      body: JSON.stringify({
-        blocks,
-        position: {
-          position: "end",
-          pageId: itemId,
-        },
-      }),
-    });
-
-    if (!contentResponse.ok) {
-      const errorText = await contentResponse.text();
-      throw new Error(
-        `Failed to add content to Craft item: ${contentResponse.status} ${formatErrorText(errorText)}`,
-      );
-    }
-
-    try {
-      const data = (await contentResponse.json()) as unknown;
-      return findFirstBlockId(data);
-    } catch {
-      return null;
-    }
-  }
-
   async deleteCollectionItems(itemIds: string[]): Promise<void> {
     if (itemIds.length === 0) return;
     const deleteResponse = await fetch(
@@ -322,46 +290,6 @@ function findSpaceId(data: unknown): string | null {
           return spaceRecordId;
         }
       }
-      for (const value of Object.values(record)) {
-        stack.push(value);
-      }
-    }
-  }
-
-  return null;
-}
-
-function findFirstBlockId(data: unknown): string | null {
-  if (!data) return null;
-  const visited = new Set<unknown>();
-  const stack: unknown[] = [data];
-
-  while (stack.length > 0) {
-    const current = stack.pop();
-    if (!current) continue;
-    if (Array.isArray(current)) {
-      for (const value of current) {
-        stack.push(value);
-      }
-      continue;
-    }
-    if (typeof current === "object") {
-      if (visited.has(current)) continue;
-      visited.add(current);
-      const record = current as Record<string, unknown>;
-      const blocks = record.blocks;
-      if (Array.isArray(blocks)) {
-        for (const block of blocks) {
-          if (block && typeof block === "object") {
-            const blockRecord = block as Record<string, unknown>;
-            if (typeof blockRecord.id === "string") return blockRecord.id;
-            if (typeof blockRecord.blockId === "string")
-              return blockRecord.blockId;
-          }
-        }
-      }
-      if (typeof record.id === "string") return record.id;
-      if (typeof record.blockId === "string") return record.blockId;
       for (const value of Object.values(record)) {
         stack.push(value);
       }
