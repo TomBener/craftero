@@ -34,12 +34,14 @@ Craftero bridges your research workflow between Zotero and Craft. It enables fas
 ## Features
 
 ### Search & Sync
+
 - Search Zotero items by title, authors, tags, DOI, abstract, and citation keys
 - Tag filtering with `.tag1 .tag2` syntax
 - Sync individual items or all search results at once
 - Open synced items directly in Craft or Zotero
 
 ### Field Mapping
+
 Automatically maps Zotero fields to Craft collection fields (case-insensitive):
 
 | Zotero Field | Craft Field Synonyms |
@@ -56,24 +58,28 @@ Automatically maps Zotero fields to Craft collection fields (case-insensitive):
 | Zotero Link | Zotero Link, Zotero URI |
 
 ### AI Integration
+
 Generate prompts for AI summarization with Cmd+S, copying a formatted prompt to your clipboard for use with Claude, ChatGPT, or other AI assistants.
 
 ## Installation
 
 ### Prerequisites
+
 - macOS
 - [Raycast](https://raycast.com/) installed
 - [Zotero](https://www.zotero.org/) with a local library
 - [Craft](https://www.craft.do/) with a collection set up
 
 ### Install from Raycast Store
+
 1. Open Raycast
 2. Search for "Craftero" in the store
 3. Click Install
 
 ### Manual Installation
+
 ```bash
-git clone https://github.com/yourusername/craftero.git
+git clone https://github.com/TomBener/craftero.git
 cd craftero
 npm install
 npm run build
@@ -154,39 +160,46 @@ craftero/
 ### Core Modules
 
 #### `commandSyncZoteroToCraft.tsx`
+
 Main React component providing the Raycast UI, search interface, and sync orchestration.
 
 #### `lib/localZotero.ts`
+
 - Reads Zotero's SQLite database using sql.js
 - Implements fuzzy search with Fuse.js
 - Caches database reads for performance
 - Supports Better BibTeX citation keys
 
 #### `lib/craft.ts`
+
 - REST API client for Craft
 - Handles collection schema, items, and blocks
 - Manages item creation, updates, and deletion
 - Daily note resolution for reading dates
 
 #### `lib/mapping.ts`
+
 - Maps Zotero fields to Craft collection properties
 - Normalizes field names with synonym matching
 - Handles dates, tags, and select options
 - Extracts citation keys from Extra field
 
 #### `lib/zotero.ts`
+
 - Utility functions for formatting Zotero data
 - Author formatting, year extraction, item type conversion
 
 ## Development
 
 ### Setup
+
 ```bash
 npm install
 npm run dev
 ```
 
 ### Commands
+
 ```bash
 npm run build      # Build extension
 npm run lint       # Run ESLint and Prettier
@@ -194,6 +207,7 @@ npm publish        # Publish to Raycast store
 ```
 
 ### Tech Stack
+
 - **TypeScript** - Type-safe development
 - **React** - UI framework (via Raycast API)
 - **sql.js** - SQLite database access
@@ -211,6 +225,7 @@ npm publish        # Publish to Raycast store
 ## Citation Keys
 
 Citation keys are extracted from the Zotero **Extra** field. Format:
+
 ```
 Citation Key: yourkey2024
 ```
@@ -220,6 +235,7 @@ Better BibTeX users: Citation keys are automatically detected.
 ## Field Types
 
 Craftero supports all Craft field types:
+
 - Text, Number, URL, Email, Phone
 - Date fields
 - Single/Multi-select (with fuzzy option matching)
@@ -229,20 +245,25 @@ Craftero supports all Craft field types:
 ## Troubleshooting
 
 ### Database locked
+
 **Issue**: "Database is locked" error
 **Solution**: Quit Zotero and retry. Zotero locks the database while running.
 
 ### Daily note not found
+
 **Issue**: Reading Date field is empty
 **Solution**: The daily note for today doesn't exist yet. Create it in Craft or the field will be skipped.
 
 ### Field not mapping
+
 **Issue**: Zotero data not appearing in Craft
 **Solution**: Check that your Craft collection has a field with a matching name (see [Field Mapping](#field-mapping)). Field names are case-insensitive.
 
 ### No results found
+
 **Issue**: Search returns no results
 **Solution**:
+
 - Check that Zotero database path is correct
 - Try a simpler query
 - Check cache period settings
@@ -250,6 +271,7 @@ Craftero supports all Craft field types:
 ## Contributing
 
 Contributions are welcome! Please:
+
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
@@ -271,8 +293,8 @@ MIT License - see [LICENSE](LICENSE) for details
 <div align="center">
   <p>Made with ❤️ for researchers</p>
   <p>
-    <a href="https://github.com/yourusername/craftero">GitHub</a> •
-    <a href="https://github.com/yourusername/craftero/issues">Issues</a> •
-    <a href="https://github.com/yourusername/craftero/blob/main/LICENSE">License</a>
+    <a href="https://github.com/TomBener/craftero">GitHub</a> •
+    <a href="https://github.com/TomBener/craftero/issues">Issues</a> •
+    <a href="https://github.com/TomBener/craftero/blob/main/LICENSE">License</a>
   </p>
 </div>
