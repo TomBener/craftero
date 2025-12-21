@@ -2,7 +2,7 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "craftero",
   "title": "Craftero",
-  "description": "Sync Zotero to Craft",
+  "description": "Sync Zotero metadata to Craft and summarize full text with AI",
   "icon": "command-icon.png",
   "author": "tomben",
   "categories": [
@@ -14,8 +14,8 @@
     {
       "name": "commandSyncZoteroToCraft",
       "title": "Craftero",
-      "subtitle": "Zotero to Craft",
-      "description": "Sync Zotero to Craft",
+      "subtitle": "Sync Zotero to Craft",
+      "description": "Sync Zotero metadata to Craft and summarize full text with AI",
       "mode": "view"
     }
   ],
