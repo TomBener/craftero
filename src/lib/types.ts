@@ -1,9 +1,3 @@
-export interface ZoteroConfig {
-  userId: string;
-  apiKey: string;
-  collectionId?: string;
-}
-
 export interface ZoteroItemData {
   key: string;
   version: number;
