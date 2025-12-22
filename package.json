@@ -5,9 +5,6 @@
   "description": "Sync Zotero items to Craft with AI-powered summaries",
   "icon": "command-icon.png",
   "author": "tomben",
-  "contributors": [
-    "tomben"
-  ],
   "categories": [
     "Productivity"
   ],
