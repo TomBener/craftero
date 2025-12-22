@@ -94,7 +94,11 @@ The extension will appear in Raycast immediately. You can stop the process (⌃ 
 | **Sync Notes** | Include Zotero notes and PDF annotations | `true` |
 | **Max Items** | Max results to show in search | `10` |
 
+<div align="center">
+
 ![Craftero Settings](images/craftero-settings.png)
+
+</div>
 
 <details>
 <summary><strong>Use API for All Documents or Selected Documents?</strong></summary>
