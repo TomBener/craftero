@@ -48,7 +48,7 @@ https://github.com/user-attachments/assets/3d03774a-b3f7-488b-b28f-a3999f2ad280
 
 ### Step 1: Duplicate Craft Template
 
-Duplicate the [Craftero Template](https://key.craft.me/J0q5mDobFLYSm4) to your Craft Space:
+Duplicate the [Craftero Template](https://key.craft.me/J0q5mDobFLYSm4) to your Craft Space. This template includes a collection with the following fields for syncing Zotero items:
 
 | Craft Field Name | Type | Zotero Metadata |
 | :--- | :--- | :--- |
@@ -66,7 +66,9 @@ Duplicate the [Craftero Template](https://key.craft.me/J0q5mDobFLYSm4) to your C
 
 <details>
 <summary><strong>View the Collection fields in Craft</strong></summary>
+
 ![Mapping Collection Fields](images/mapping-collection-fields.png)
+
 </details>
 
 ### Step 2: Install Extension
