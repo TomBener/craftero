@@ -71,7 +71,7 @@ Duplicate the [Craftero Template](https://key.craft.me/J0q5mDobFLYSm4) to your C
 
 </details>
 
-### Step 2: Install Extension
+### Step 2: Install Craftero
 
 Craftero has been submitted to the Raycast Store and is pending review. Currently, you can install it locally:
 
@@ -84,7 +84,7 @@ npm run dev
 
 The extension will appear in Raycast immediately. You can stop the process (⌃ + C) after installation, Craftero will remain available in Raycast.
 
-### Step 3: Configure Settings
+### Step 3: Configure Craftero
 
 | Setting | Description | Default |
 | :--- | :--- | :--- |
