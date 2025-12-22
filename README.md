@@ -131,6 +131,7 @@ Create an AI Command in Raycast named `AI Summary with MCP to Craft`.
 
 <details>
 <summary><strong>View AI Command screenshot</strong></summary>
+
 ![AI Command MCP Summary](images/ai-command-mcp-summary.png)
 </details>
 
