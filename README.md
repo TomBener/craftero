@@ -9,16 +9,15 @@
 
 Craftero bridges your research workflow between Zotero and Craft. It enables fast, fuzzy searching of your Zotero library directly from Raycast and syncs items into structured Craft collections with AI-powered summaries.
 
-### How it Works
-
 ```mermaid
 graph LR
     Z[(Zotero Local DB)] -- "Fuzzy Search" --> R(Craftero)
-    R -- "Sync metadata" --> C["Craft Collection"]
+    R -- "Sync metadata via Craft API" --> C["Craft Collection"]
+    R -- "Provide Item Key" --> AI
     subgraph "AI Summary"
-    C -- "Provide Item Key" --> AI["Raycast AI + Zotero MCP & Craft MCP"]
-    AI -- "Get Fulltext & Write" --> C
+    AI["Raycast AI Command + Zotero MCP & Craft MCP"]
     end
+    AI -- "Get Fulltext & Write" --> C
 ```
 
 ## Demo
