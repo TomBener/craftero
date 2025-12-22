@@ -13,11 +13,8 @@ Craftero bridges your research workflow between Zotero and Craft. It enables fas
 graph LR
     Z[(Zotero Local DB)] -- "Fuzzy Search" --> R(Craftero)
     R -- "Sync metadata via Craft API" --> C["Craft Collection"]
-    R -- "Provide Item Key" --> AI
-    subgraph "AI Summary"
-    AI["Raycast AI Command + Zotero MCP & Craft MCP"]
-    end
-    AI -- "Get Fulltext & Write" --> C
+    R -- "Provide Item Key" --> AI["Raycast AI Command + Zotero MCP & Craft MCP"]
+    AI -- "Get Fulltext & Summarize" --> C
 ```
 
 ## Demo
