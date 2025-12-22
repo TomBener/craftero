@@ -106,7 +106,7 @@ Create an AI Command in Raycast named `AI Summary with MCP to Craft`.
 </details>
 
 > [!NOTE]
-> The AI Command name must exactly match the name above for Craftero to invoke it correctly.
+> The AI Command name must exactly match the name above for Craftero to invoke it correctly. You can import this [AI Command JSON](ai-commands/ai-summary-with-mcp-to-craft.json) directly into Raycast.
 
 <details>
 <summary><strong>Click to expand to view the AI Command prompt</strong></summary>
