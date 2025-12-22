@@ -1,7 +1,7 @@
 # Craftero
 
 <div align="center">
-  <img src="assets/command-icon.png" alt="Craftero command icon" width="120" />
+  <img src="assets/command-icon.png" alt="Craftero command icon" width="150" />
 </div>
 </p>
 
@@ -11,7 +11,11 @@ Craftero bridges your research workflow between Zotero and Craft. It enables fas
 
 ## Demo
 
+<div align="center">
+
 https://github.com/user-attachments/assets/3d03774a-b3f7-488b-b28f-a3999f2ad280
+
+</div>
 
 ## Features
 
