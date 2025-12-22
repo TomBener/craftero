@@ -15,9 +15,9 @@ type ExtensionPreferences = {
   /** Craft API Base URL - Example: https://connect.craft.do/links/XXXX/api/v1 */
   "craft_api_base": string,
   /** Craft API Key - Craft API token (leave empty if your Craft API link is public) */
-  "craft_api_key"?: string,
+  "craft_api_key": string,
   /** Craft Space ID - Used to open items via craftdocs:// deep links */
-  "craft_space_id"?: string,
+  "craft_space_id": string,
   /** Craft Collection ID - Craft collection to receive items */
   "craft_collection_id": string,
   /** Max Items - Number of recent items to sync */

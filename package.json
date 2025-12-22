@@ -5,6 +5,9 @@
   "description": "Sync Zotero items to Craft with AI-powered summaries",
   "icon": "command-icon.png",
   "author": "tomben",
+  "contributors": [
+    "tomben"
+  ],
   "categories": [
     "Productivity"
   ],
@@ -17,6 +20,20 @@
       "subtitle": "Sync Zotero to Craft",
       "description": "Sync Zotero items to Craft with AI-powered summaries",
       "mode": "view"
+    }
+  ],
+  "screenshots": [
+    {
+      "title": "Search Interface",
+      "description": "Fast fuzzy search across Zotero library with collection filtering"
+    },
+    {
+      "title": "Item Actions",
+      "description": "Sync items to Craft, open in Zotero, copy keys, delete items etc."
+    },
+    {
+      "title": "AI Summary with MCP",
+      "description": "Generate AI-powered paper summaries to Craft using MCP servers"
     }
   ],
   "preferences": [
