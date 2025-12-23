@@ -37,7 +37,7 @@
     {
       "name": "zotero_db_path",
       "type": "textfield",
-      "required": false,
+      "required": true,
       "default": "~/Zotero/zotero.sqlite",
       "title": "Zotero Path",
       "description": "Local Zotero database path"
@@ -46,7 +46,7 @@
       "name": "cache_period",
       "type": "textfield",
       "title": "Cache Period (in minutes)",
-      "required": false,
+      "required": true,
       "default": "10",
       "label": "Number of Minutes to Cache",
       "description": "Minutes after which cache must be updated"
@@ -68,7 +68,7 @@
     {
       "name": "craft_space_id",
       "type": "textfield",
-      "required": false,
+      "required": true,
       "title": "Craft Space ID",
       "description": "Used to open items via craftdocs:// deep links"
     },
