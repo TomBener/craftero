@@ -27,7 +27,7 @@ https://github.com/user-attachments/assets/3d03774a-b3f7-488b-b28f-a3999f2ad280
 
 ## Features
 
-- Local-first Zotero database access (no cloud API required)
+- Local-first Zotero database access
 - Fast fuzzy search across titles, authors, tags, DOI, abstracts, and citation keys
 - Collection dropdown to filter search results by specific Zotero collections
 - Smart sync with automatic deduplication by Zotero URI
@@ -48,7 +48,7 @@ https://github.com/user-attachments/assets/3d03774a-b3f7-488b-b28f-a3999f2ad280
 
 ### Step 1: Duplicate Craft Template
 
-Duplicate the [Craftero Template](https://key.craft.me/J0q5mDobFLYSm4) to your Craft Space. This template includes a collection with the following fields for syncing Zotero items:
+Duplicate the [Craftero template](https://key.craft.me/J0q5mDobFLYSm4) to your Craft Space. This template includes a collection with the following fields for syncing Zotero items:
 
 | Craft Field Name | Type | Zotero Metadata |
 | :--- | :--- | :--- |
@@ -60,12 +60,12 @@ Duplicate the [Craftero Template](https://key.craft.me/J0q5mDobFLYSm4) to your C
 | **Abstract** | Text | Item Abstract |
 | **Tags** | Multiple Select | Zotero Tags |
 | **Zotero URI** | URL | `zotero://select/library/items/<Item Key>` |
-| **Status** | Single Select | Defaulted to "To Read" if options exist |
+| **Status** | Single Select | Defaulted to "To Read" |
 | **Date Added** | Date | Zotero Date Added |
 | **Reading Date** | Link to Block | Link current collection item as backlink of daily note |
 
 <details>
-<summary><strong>View the Collection fields in Craft</strong></summary>
+<summary><strong>View the Collection fields screenshot in Craft</strong></summary>
 
 ![Mapping Collection Fields](images/mapping-collection-fields.png)
 
@@ -86,15 +86,18 @@ The extension will appear in Raycast immediately. You can stop the process (⌃ 
 
 ### Step 3: Configure Craftero
 
-| Setting | Description | Default |
+Open Raycast, search for *Craftero*, and configure the following settings:
+
+| Setting | Description | Note |
 | :--- | :--- | :--- |
-| **Zotero Path** | Path to `zotero.sqlite` | `~/Zotero/zotero.sqlite` |
-| **API Base URL** | Craft API endpoint (e.g., `https://connect.craft.do/api/...`) | - |
-| **API Key** | Craft Secret API key | - |
-| **Space ID** | Required for deep links to open Craft app | - |
-| **Collection ID** | The unique ID of your Craft collection | - |
-| **Sync Notes** | Include Zotero notes and PDF annotations | `true` |
-| **Max Items** | Max results to show in search | `10` |
+| **Zotero Path** | Path to your Zotero database file | Default: `~/Zotero/zotero.sqlite` |
+| **Cache Period (in minutes)** | Duration to cache search results locally | Default: `10` |
+| **Craft API Base URL** | Craft API endpoint (e.g. `https://connect.craft.do/links/XXXXX/api/v1`) | Required |
+| **Craft API Key** | Craft API authentication token | Not required if API URL is public |
+| **Craft Space ID** | Unique identifier for your Craft space | Required |
+| **Craft Collection ID** | Target collection for synced items | Required |
+| **Max Items** | Maximum number of search results to display | Default: `10` |
+| **Sync Notes** | Include Zotero notes and PDF annotations | Default: `true` |
 
 <div align="center">
 
@@ -103,20 +106,35 @@ The extension will appear in Raycast immediately. You can stop the process (⌃ 
 </div>
 
 <details>
-<summary><strong>Use API for All Documents or Selected Documents?</strong></summary>
-To sync "Reading Date" as a daily note link, use the <a href="https://connect.craft.do/api-docs/space"><strong>All Documents</strong></a> API. If you don't need this feature, you can use the <a href="https://connect.craft.do/api-docs/documents">Selected Documents</a> API instead.
+<summary><strong>Should I use the All Documents or Selected Documents API?</strong></summary>
+
+To sync "Reading Date" as a daily note backlink (shown below), you must use the [All Documents](https://connect.craft.do/api-docs/space) API. This links your reading activity to daily notes automatically. If you don't need this feature, use the [Selected Documents](https://connect.craft.do/api-docs/documents) API instead.
+
+![Link to Daily Note](images/link-to-daily-note.png)
+
 </details>
 
 <details>
-<summary><strong>How to get Space ID?</strong></summary>
-Open any document in Craft and copy the deeplink (⌘ + ⌥ + L). You'll get a URL like <code>craftdocs://open?blockId=5E8FD524-1E73-461A-895A-FDF6E18E8507&spaceId=123e4567-e89b-12d3-a456-426614174035</code>. The Space ID is the value after <code>spaceId=</code>.
+<summary><strong>How to get the Space ID?</strong></summary>
+
+1. Open any document in Craft
+2. Copy the deeplink with `⌘ + ⌥ + L`
+3. You'll get a URL like: `craftdocs://open?blockId=5E8FD524-1E73-461A-895A-FDF6E18E8507&spaceId=123e4567-e89b-12d3-a456-426614174035`
+4. Extract the value after `spaceId=`
+
 </details>
 
 <details>
-<summary><strong>How to get Collection ID?</strong></summary>
-To get your Collection ID, duplicate the <a href="https://key.craft.me/J0q5mDobFLYSm4">template collection</a> to your Craft space. Right-click to open the context menu, select <code>Copy As -> Deeplink</code>, and you'll get a URL like <code>craftdocs://open?blockId=7f2a4c91-5e3b-4d6a-b9e2-1c8d3f5a7b2e&spaceId=a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6</code>. The Collection ID is the value after <code>blockId=</code>.
+<summary><strong>How to get the Collection ID?</strong></summary>
+
+1. Duplicate the [Craftero template](https://key.craft.me/J0q5mDobFLYSm4) to your Craft space
+2. Right-click on the collection to open the context menu
+3. Select **Copy As → Deeplink**
+4. You'll get a URL like: `craftdocs://open?blockId=7f2a4c91-5e3b-4d6a-b9e2-1c8d3f5a7b2e&spaceId=a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6`
+5. Extract the value after `blockId=`
 
 ![Copy Collection ID](images/copy-collection-id.png)
+
 </details>
 
 ### Step 4: Enable AI Summarization with MCP
@@ -133,6 +151,7 @@ Create an AI Command in Raycast named `AI Summary with MCP to Craft`.
 <summary><strong>View AI Command screenshot</strong></summary>
 
 ![AI Command MCP Summary](images/ai-command-mcp-summary.png)
+
 </details>
 
 > [!NOTE]
