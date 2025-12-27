@@ -130,7 +130,7 @@ To sync "Reading Date" as a daily note backlink (shown below), you must use the 
 1. Duplicate the [Craftero template](https://key.craft.me/J0q5mDobFLYSm4) to your Craft space
 2. Right-click on the collection to open the context menu
 3. Select **Copy As → Deeplink**
-4. You'll get a URL like: `craftdocs://open?blockId=7f2a4c91-5e3b-4d6a-b9e2-1c8d3f5a7b2e&spaceId=a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6`
+4. You'll get a URL like: `craftdocs://open?blockId=7F2A4C91-5E3B-4D6A-B9E2-1C8D3F5A7B2E&spaceId=a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6`
 5. Extract the value after `blockId=`
 
 ![Copy Collection ID](images/copy-collection-id.png)
