@@ -3,7 +3,6 @@
 <div align="center">
   <img src="assets/command-icon.png" alt="Craftero command icon" width="150" />
 </div>
-</p>
 
 ## Overview
 
@@ -104,6 +103,13 @@ Open Raycast, search for *Craftero*, and configure the following settings:
 ![Craftero Settings](images/craftero-settings.png)
 
 </div>
+
+<details>
+<summary><strong>How to get the Craft API Base URL and API Key?</strong></summary>
+
+Please refer to the [Craft documentation](https://support.craft.do/hc/en-us/articles/23702897811612-Craft-API) for detailed instructions on creating an API key and obtaining the API base URL.
+
+</details>
 
 <details>
 <summary><strong>Should I use the All Documents or Selected Documents API?</strong></summary>
