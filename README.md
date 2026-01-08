@@ -1,7 +1,7 @@
 # Craftero
 
 <div align="center">
-  <img src="assets/command-icon.png" alt="Craftero command icon" width="150" />
+  <img src="images/command-icon.png" alt="Craftero command icon" width="150" />
 </div>
 
 ## Overview

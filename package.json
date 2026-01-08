@@ -21,14 +21,17 @@
   ],
   "screenshots": [
     {
+      "path": "metadata/search-interface.png",
       "title": "Search Interface",
       "description": "Fast fuzzy search across Zotero library with collection filtering"
     },
     {
+      "path": "metadata/actions.png",
       "title": "Item Actions",
       "description": "Sync items to Craft, open in Zotero, copy keys, delete items etc."
     },
     {
+      "path": "metadata/ai-summary-mcp.png",
       "title": "AI Summary with MCP",
       "description": "Generate AI-powered paper summaries to Craft using MCP servers"
     }
